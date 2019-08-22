@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lockerservice
+  labels:
+    app: msa-banking-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      name: locker-service
+      app: msa-banking-app
+
+  template:
+    metadata:
+      name: locker-msa-pod
+      labels:
+        name: locker-service
+        app: msa-banking-app
+    spec:
+      containers:
+      - name: locker-container
+        image: ${REPOSITORY_TAG}
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 300m
+            memory: 600Mi
+
+      imagePullSecrets:
+          - name: myregistrykey
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lockerservice
+  labels:
+    name: locker-service
+    app: msa-banking-app
+
+spec:
+  type: ClusterIP
+  ports:
+  -  protocol: TCP
+     targetPort: 9083
+     port: 9083
+
+  selector:
+    name: locker-service
+    app: msa-banking-app
